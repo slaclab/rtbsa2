@@ -71,7 +71,7 @@ class rtbsaGUI(Display):
         Display.__init__(self, parent=parent, args=args)
 
         # disable beamline toggles for lcls/facet as needed
-        is_F2 = (gethostname() == 'facet-srv02')
+        is_F2 = (gethostname() in ['facet-srv01', 'facet-srv02'])
         self.bl_NC_SXR.setEnabled(not is_F2)
         self.bl_NC_HXR.setEnabled(not is_F2)
         self.bl_SC_BSYD.setEnabled(not is_F2)
