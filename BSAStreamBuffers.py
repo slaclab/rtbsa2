@@ -68,11 +68,13 @@ class BSAStreamBuffer():
         >> stream = BSAStreamBuffer('BLEN:LI21:265:AIMAX', beamline='NC_HXR')
         >> buffer, pulse_ID = stream.get_data()
     """
-    def __init__(self, channel, beamline):
+    def __init__(self, channel, beamline, silence=False):
         self._channel, self._beamline = channel, beamline
         self._pv, self._pv_rate, self._pv_history = None, None, None
         self._mutex = Lock()
+        self._silence = silence
         self._reinit(raise_errors=True)
+
 
     def _reinit(self, raise_errors=False):
         # reinitialize underlying data structures, run automatically on config change
@@ -129,7 +131,7 @@ class BSAStreamBuffer():
         # append the latest value to the stream buffer, if any pulses have been missed
         # since the last update, they are padded with NaNs
 
-        silence = kw.pop("silence", False)
+
         
         if not self._sample_rate: return
         p_new = ns_to_pulse_ID(nanoseconds)
@@ -137,7 +139,7 @@ class BSAStreamBuffer():
         p_expected = (self._p_prev + self.ticks_per_sample) % 2**14
         jump = int((p_new - p_expected) / self.ticks_per_sample)
         if jump > 0:
-            if not silence:
+            if not self._silence:
                 print(f'{self.channel} missed {jump} pulses: {self._p_prev}->{p_new}')
             b = roll(b, -1*jump)
             b[-1*jump:] = nan
@@ -221,18 +223,20 @@ class dualBSAStreamBuffer():
                )
         >> buffer, pulse_ID = stream.get_data() 
     """
-    def __init__(self, ch1, ch2, beamline):
+    def __init__(self, ch1, ch2, beamline, silence = False):
         self.__doc__ += f'\n{BSAStreamBuffer.__doc__}'
         self._ch1, self._ch2, self._beamline = ch1, ch2, beamline
         self._p_latest, self.N_pts_sync = -1, -1
+        self._silence = silence
         self._reinit(raise_errors=True)
+
 
     def _reinit(self, raise_errors=False):
         # reinitialize underlying BSAStreamBuffers, run automatically on config change
         try:
             if self._p_latest > 0: self.stop()
-            self._s1 = BSAStreamBuffer(self._ch1, self._beamline)
-            self._s2 = BSAStreamBuffer(self._ch2, self._beamline)
+            self._s1 = BSAStreamBuffer(self._ch1, self._beamline, silence = self._silence)
+            self._s2 = BSAStreamBuffer(self._ch2, self._beamline, silence = self._silence)
         except Exception as e:
             if raise_errors:
                 print(f'{self.beamline} dualBSAStreamBuffer init with [{self.ch1}, {self.ch2}] failed')
