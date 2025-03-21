@@ -125,9 +125,12 @@ class BSAStreamBuffer():
         """ return array of 2800 data points and the pulse ID of the latest value """
         return self._buffer, self._p_latest
 
-    def _stream(self, value, nanoseconds, silence = None, **kw):
+    def _stream(self, value, nanoseconds, **kw):
         # append the latest value to the stream buffer, if any pulses have been missed
         # since the last update, they are padded with NaNs
+
+        silence = kw.pop("silence", False)
+        
         if not self._sample_rate: return
         p_new = ns_to_pulse_ID(nanoseconds)
         b = deepcopy(self._buffer)
@@ -147,6 +150,9 @@ class BSAStreamBuffer():
             self._buffer = _push_to_ring_buffer(b, value)
             self._p_prev = self._p_latest
             self._p_latest = p_new
+
+
+    
 
     def _rate_update(self, value, **kw):
         # updates current buffer sample rate and derived quantities
