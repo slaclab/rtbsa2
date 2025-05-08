@@ -8,4 +8,4 @@ else
     exit 0
 fi
 
-ssh $HOSTNAME "pydm --hide-nav-bar --hide-status-bar --hide-menu-bar /home/fphysics/zack/workspace/rtbsa2/rtbsaGUI.py"
+ssh -Y $HOSTNAME "pydm --hide-nav-bar --hide-status-bar --hide-menu-bar /home/fphysics/zack/workspace/rtbsa2/rtbsaGUI.py"
