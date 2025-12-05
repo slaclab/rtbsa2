@@ -40,7 +40,7 @@ BSA_BUFFER_LENGTH = 2800  # don't think this is set to change any time soon...
 
 def ns_to_pulse_ID(ns):
     """ (for BSA PVs) retrieves the pulse ID from the lower 14 bits of the nanoseconds field """
-    return int(ns & 0x3fff)
+    return int(ns & 0x1ffff)
 
 def _push_to_ring_buffer(B, value): B = roll(B, -1); B[-1] = value; return B
 
